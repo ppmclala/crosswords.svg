@@ -14,7 +14,7 @@ Simplest thing possible with as few moving parts as possible.  App will be distr
 
 ## license
 
-This software is [unlicensed](./LICENSE.md).  Do with it what you please.
+This software is [unlicensed](./LICENSE).  Do with it what you please.
 
 ## thanks
 

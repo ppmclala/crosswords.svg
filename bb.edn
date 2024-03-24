@@ -1,0 +1,9 @@
+{:min-bb-version "0.8.156"
+ :tasks {:requires ([babashka.fs :as fs]
+                    [babashka.tasks :refer [shell]])
+
+         nrepl     {:doc  "starts the nREPL"
+                    :task (clojure {:dir "."} "-M:dev:nrepl")}
+
+         cider     {:doc  "starts the cider"
+                    :task (clojure {:dir "."} "-M:dev:cider")}}}
