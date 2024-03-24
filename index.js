@@ -17,7 +17,7 @@ const puzzle = () => {
     [59, "_", "_", "_", "*", 60, "_", "_", "_", "_", "*", 61, "_", "_", "_"],
   ];
 
-  var selectedCell = { row: 0, col: 0 };
+  const selectedCell = { row: 0, col: 0 };
   const ACROSS = 0;
   const DOWN = 1;
   var direction = ACROSS;
