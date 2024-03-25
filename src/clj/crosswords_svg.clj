@@ -47,13 +47,17 @@
   (let [template "./puzzles.js.template"]
     (sp/render-file template {:puzzle-count 1000 :puzzles ps})))
 
+(defn gen-puzzle-data []
+  (->>
+   (extract-puzzle-data "data/csv")
+   (gen-puzzles-js)
+   (save-and-forward "gen/js/puzzles.js")))
+
 (defn- build-app []
   (clean)
   (ensure-build-dir)
   (->>
-   (extract-puzzle-data "data/csv")
-   (gen-puzzles-js)
-   (save-and-forward "gen/js/puzzles.js")
+   gen-puzzle-data
    gen-index))
 
 (defn -main [& args]

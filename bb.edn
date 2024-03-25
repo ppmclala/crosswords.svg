@@ -1,5 +1,6 @@
 {:min-bb-version "0.8.156"
  :paths ["." "src/clj" "resources"]
  :tasks {:requires ([crosswords-svg :as cw])
+         gen-puzzles cq/gen-puzzle-data
          gen-index cw/gen-index-dev
          build cw/build-app}}

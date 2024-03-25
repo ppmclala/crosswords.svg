@@ -21,6 +21,7 @@ This software is [unlicensed](./LICENSE).  Do with it what you please.
 * generate index.html for dev/test: `bb gen-index`
 * build a single HTML file for release: `bb build`
 * run an `nrepl` instance using babashka: `bb nrepl-server`
+* generate puzzle data from CSV files in `data`: `bb gen-puzzles`
 * coming soon: extract clues from google sheet: `bb gen-puzzle-data`
 
 ## thanks
