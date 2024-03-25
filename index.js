@@ -1,8 +1,12 @@
-var selectedPuzzle = 0;
-const setSelectedPuzzle = (e, el) => {
-  console.log('<<< selectedPuzzle', selectedPuzzle, e.srcElement.value);
-  selectedPuzzle = e.srcElement.value;
-  console.log('>>> selectedPuzzle', selectedPuzzle, e);
+const ACROSS = 0;
+const DOWN = 1;
+const state = {};
+
+state.selectedPuzzle = 0;
+state.selectedCell = { row: 0, col: 0 };
+
+const setSelectedPuzzle = (e, _) => {
+  state.selectedPuzzle = e.srcElement.value;
   d3.selectAll('g.clues').remove();
   d3.selectAll('#puzzle-selector').remove();
   d3.selectAll('svg').remove();
@@ -10,7 +14,7 @@ const setSelectedPuzzle = (e, el) => {
 };
 
 const puzzle = () => {
-  console.log('rendering puzzle', selectedPuzzle);
+  console.log('rendering puzzle', state.selectedPuzzle);
   var board = [
     [1, 2, 3, 4, "*", 5, 6, 7, 8, 9, "*", 10, 11, 12, 13],
     [14, "_", "_", "_", "*", 15, "_", "_", "_", "_", "*", 16, "_", "_", "_"],
@@ -29,9 +33,6 @@ const puzzle = () => {
     [59, "_", "_", "_", "*", 60, "_", "_", "_", "_", "*", 61, "_", "_", "_"],
   ];
 
-  const selectedCell = { row: 0, col: 0 };
-  const ACROSS = 0;
-  const DOWN = 1;
   var direction = ACROSS;
 
   const highlightSelected = () => {
@@ -42,14 +43,14 @@ const puzzle = () => {
 
     switch (direction) {
       case ACROSS:
-        d3.selectAll(`g#r${selectedCell.row} rect.cell`).classed(
+        d3.selectAll(`g#r${state.selectedCell.row} rect.cell`).classed(
           "dirGuide",
           true
         );
 
         break;
       case DOWN:
-        d3.selectAll(`rect#cell${selectedCell.col}.cell`).classed(
+        d3.selectAll(`rect#cell${state.selectedCell.col}.cell`).classed(
           "dirGuide",
           true
         );
@@ -59,15 +60,15 @@ const puzzle = () => {
 
     // select the cell and mark target
     d3.select(
-      `g#r${selectedCell.row} text#cell-text${selectedCell.col}`
+      `g#r${state.selectedCell.row} text#cell-text${state.selectedCell.col}`
     ).classed("target", true);
 
-    d3.select(`g#r${selectedCell.row} rect#cell${selectedCell.col}`).classed(
+    d3.select(`g#r${state.selectedCell.row} rect#cell${state.selectedCell.col}`).classed(
       "selected",
       true
     );
 
-    d3.select(`g#r${selectedCell.row} rect#cell${selectedCell.col}`).classed(
+    d3.select(`g#r${state.selectedCell.row} rect#cell${state.selectedCell.col}`).classed(
       "dirGuide",
       false
     );
@@ -76,32 +77,32 @@ const puzzle = () => {
   const onCellClick = (e) => {
     e.preventDefault();
 
-    selectedCell.row = Math.floor((e.y - 25) / cellWall);
-    selectedCell.col = Math.floor((e.x - 30) / cellWall);
+    state.selectedCell.row = Math.floor((e.y - 25) / cellWall);
+    state.selectedCell.col = Math.floor((e.x - 30) / cellWall);
 
     highlightSelected();
   };
 
   const deselect = () => {
-    selectedCell.col = null;
-    selectedCell.row = null;
+    state.selectedCell.col = null;
+    state.selectedCell.row = null;
     highlightSelected();
   };
 
   const selectNextCol = (d) => {
     do {
-      if (selectedCell.col === 0) selectedCell.col = board.length;
-      selectedCell.col = (selectedCell.col + d) % board.length;
-    } while (board[selectedCell.row][selectedCell.col] === "*");
+      if (state.selectedCell.col === 0) state.selectedCell.col = board.length;
+      state.selectedCell.col = (state.selectedCell.col + d) % board.length;
+    } while (board[state.selectedCell.row][state.selectedCell.col] === "*");
 
     highlightSelected();
   };
 
   const selectNextRow = (d) => {
     do {
-      if (selectedCell.row === 0) selectedCell.row = board.length;
-      selectedCell.row = (selectedCell.row + d) % board.length;
-    } while (board[selectedCell.row][selectedCell.col] === "*");
+      if (state.selectedCell.row === 0) state.selectedCell.row = board.length;
+      state.selectedCell.row = (state.selectedCell.row + d) % board.length;
+    } while (board[state.selectedCell.row][state.selectedCell.col] === "*");
 
     highlightSelected();
   };
@@ -167,18 +168,6 @@ const puzzle = () => {
 
   var body = d3.select("body").on("keydown", onKeyDown);
 
-  body
-    .append("select")
-    .attr("id", "puzzle-selector")
-    .selectAll("option")
-    .data(puzzles)
-    .enter()
-    .append("option")
-    .text((d) => d.name)
-    .attr('selected', (_, i) => i == selectedPuzzle ? "selected" : "none")
-    .attr("value", (_, i) => i);
-
-  d3.select("select#puzzle-selector").on("change", setSelectedPuzzle);
 
   var svg = body.append("svg").attr("width", 1200).attr("height", 1200);
   var cellWall = 50;
@@ -231,16 +220,16 @@ const puzzle = () => {
   d3.selectAll("inputText").on("click", onCellClick);
 
   var clues = {
-    across: puzzles[selectedPuzzle].clues
+    across: puzzles[state.selectedPuzzle].clues
       .filter((d) => d.direction === "across")
       .map((d) => d.clue),
-    down: puzzles[selectedPuzzle].clues
+    down: puzzles[state.selectedPuzzle].clues
       .filter((d) => d.direction === "down")
       .map((d) => d.clue),
   };
 
   const addClues = (dir, x) => {
-    console.log('adding clues for', selectedPuzzle, dir);
+    console.log('adding clues for', state.selectedPuzzle, dir);
     svg
       .selectAll(`g.clues.${dir}`)
       .data(clues[dir].flatMap((c) => c))
@@ -255,6 +244,20 @@ const puzzle = () => {
 
   addClues("across", 800);
   addClues("down", 1000);
+
+  body
+    .append("select")
+    .attr("id", "puzzle-selector")
+    .selectAll("option")
+    .data(puzzles)
+    .enter()
+    .append("option")
+    .text((d) => d.name)
+    .property('selected', (_, i) => i == state.selectedPuzzle ? "selected" : "")
+    .attr("value", (_, i) => i);
+
+  d3.select("select#puzzle-selector").on("change", setSelectedPuzzle);
 };
 
-puzzle();
+window.onload = () => { puzzle(); }
+

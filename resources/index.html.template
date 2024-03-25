@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
+	{% if env = :dev %}
         <script src="d3.v7.js"></script>
-	
         <script src="gen/js/puzzles.js" defer="true"></script>
         <script src="index.js" defer="true"></script>
-	
+	{% else %}
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" defer="true"></script>
+        <script defer="true">{% safe %}{{ allcode }}{% endsafe %}</script>
+	{% endif %}
 <style>
 
 .cell {
