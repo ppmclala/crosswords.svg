@@ -16,6 +16,13 @@ Simplest thing possible with as few moving parts as possible.  App will be distr
 
 This software is [unlicensed](./LICENSE).  Do with it what you please.
 
+## development
+
+* generate index.html for dev/test: `bb gen-index`
+* build a single HTML file for release: `bb build`
+* run an `nrepl` instance using babashka: `bb nrepl-server`
+* coming soon: extract clues from google sheet: `bb gen-puzzle-data`
+
 ## thanks
 
 * https://github.com/gstasiewicz/crossword - ideas on handling input

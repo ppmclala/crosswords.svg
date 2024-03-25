@@ -1,12 +1,5 @@
 {:min-bb-version "0.8.156"
  :paths ["." "src/clj" "resources"]
  :tasks {:requires ([crosswords-svg :as cw])
-
-         nrepl     {:doc  "starts the nREPL"
-                    :task (clojure {:dir "."} "-M:dev:nrepl")}
-
-         cider     {:doc  "starts the cider"
-                    :task (clojure {:dir "."} "-M:dev:cider")}
-
          gen-index cw/gen-index-dev
          build cw/build-app}}
