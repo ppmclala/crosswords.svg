@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-
+            
       - name: bb build 
-        uses tzafrirben/babashka-docker-action@v0.3
+        uses: tzafrirben/babashka-docker-action@v1.1
         id: bb_shell
         with:
           bb_cmd: "bb build"
