@@ -30,26 +30,6 @@ jobs:
           # to always provision the latest version
           cli: 1.11.1              # Clojure CLI based on tools.deps
           bb: 'latest'                    # Babashka
-          clj-kondo: 2022.05.31        # Clj-kondo
-          cljfmt: 0.10.2               # cljfmt
-          cljstyle: 0.15.0             # cljstyle
-          cmd-exe-workaround: 'latest' # Replaces `clojure` with `deps.clj` on Windows
-          zprint: 1.2.3                # zprint
-          
-      # Optional step:
-      - name: Cache clojure dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.m2/repository
-            ~/.gitlibs
-            ~/.deps.clj
-          # List all files containing dependencies:
-          key: cljdeps-${{ hashFiles('deps.edn') }}
-          # key: cljdeps-${{ hashFiles('deps.edn', 'bb.edn') }}
-          # key: cljdeps-${{ hashFiles('project.clj') }}
-          # key: cljdeps-${{ hashFiles('build.boot') }}
-          restore-keys: cljdeps-
 
       - name: Get babashka version
         run: bb build
