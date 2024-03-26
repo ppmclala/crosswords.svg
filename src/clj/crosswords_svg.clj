@@ -14,6 +14,10 @@
   (when-not (fs/exists? build-dir)
     (fs/create-dir build-dir)))
 
+(defn- ensure-gen-dir []
+  (when-not (fs/exists? "gen/js")
+    (fs/create-dirs "gen/js")))
+
 (defn- extract-puzzle-data [dir]
   (->>
    dir
@@ -58,6 +62,7 @@
 (defn- build-app []
   (clean)
   (ensure-build-dir)
+  (ensure-gen-dir)
   (-> (gen-puzzle-data) gen-index))
 
 (defn -main [& args]
