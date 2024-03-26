@@ -27,14 +27,8 @@ jobs:
         with:
           bb: 'latest'                    # Babashka
 
-      - name: debug
-        run: echo `ls -l`
-
-      - name: bb version
-        run: bb --version
-
-      - name: bb.edn
-        run: cat bb.edn
-
-      - name: Get babashka version
+      - name: gen index.html
         run: bb build
+
+      - name: ls build dir
+        run: echo `ls -l build/`
