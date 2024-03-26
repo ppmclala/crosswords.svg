@@ -28,12 +28,14 @@
                     (->> (first csv-data) (map keyword) repeat)
                     (rest csv-data)))}))))
 
-(defn- save-and-forward [path content] (spit path content) content)
+(defn- save-and-forward [path content] 
+  (spit path content) 
+  content)
 
 (defn- gen-index [puzzles]
   (let [template "./index.html.template"
         index-js (slurp "index.js")
-        allcode (str puzzles "\n" index-js)]
+        allcode (str "\n" puzzles "\n" index-js)]
     (->>
      (sp/render-file template {:env :build
                                :allcode allcode})
@@ -56,9 +58,7 @@
 (defn- build-app []
   (clean)
   (ensure-build-dir)
-  (->>
-   gen-puzzle-data
-   gen-index))
+  (-> (gen-puzzle-data) gen-index))
 
 (defn -main [& args]
   (build-app))
@@ -67,8 +67,11 @@
 
   (->>
    (extract-puzzle-data "data/csv")
-   (gen-puzzles-js)
-   (spit "gen/js/puzzles.js"))
+   (gen-puzzles-js))
+
+  (build-app)
+
+  (gen-puzzle-data)
 
   (sp/render "{{ puzzles }}" {:puzzles (extract-puzzle-data "data/csv")})
 ;;

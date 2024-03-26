@@ -3,4 +3,5 @@
  :tasks {:requires ([crosswords-svg :as cw])
          gen-puzzles cw/gen-puzzle-data
          gen-index cw/gen-index-dev
-         build cw/build-app}}
+         build cw/build-app
+         make cw/-main}}
