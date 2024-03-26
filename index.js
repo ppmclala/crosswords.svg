@@ -14,7 +14,6 @@ const setSelectedPuzzle = (e, _) => {
 };
 
 const puzzle = () => {
-  console.log('rendering puzzle', state.selectedPuzzle);
   var board = [
     [1, 2, 3, 4, "*", 5, 6, 7, 8, 9, "*", 10, 11, 12, 13],
     [14, "_", "_", "_", "*", 15, "_", "_", "_", "_", "*", 16, "_", "_", "_"],
@@ -219,6 +218,8 @@ const puzzle = () => {
   d3.selectAll("rect").on("click", onCellClick);
   d3.selectAll("inputText").on("click", onCellClick);
 
+  // TODO: we should generate the dataset partitioned
+  // by direction instead to avoid this re-mapping
   var clues = {
     across: puzzles[state.selectedPuzzle].clues
       .filter((d) => d.direction === "across")
@@ -229,7 +230,6 @@ const puzzle = () => {
   };
 
   const addClues = (dir, x) => {
-    console.log('adding clues for', state.selectedPuzzle, dir);
     svg
       .selectAll(`g.clues.${dir}`)
       .data(clues[dir].flatMap((c) => c))
