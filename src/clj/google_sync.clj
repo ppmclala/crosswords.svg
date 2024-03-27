@@ -2,6 +2,8 @@
   (:require
    [clojure.edn :as edn]
    [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.build.api :as build]
    [clojure.tools.logging :as log])
   (:import
    [com.google.api.client.googleapis.javanet GoogleNetHttpTransport]
@@ -32,34 +34,63 @@
 (defn- ->sheets [creds]
   (try
     (-> (Sheets$Builder.
-           (GoogleNetHttpTransport/newTrustedTransport)
-           (GsonFactory/getDefaultInstance)
-           (HttpCredentialsAdapter. creds))
-      (.setApplicationName "foo")
-      (.build))
+         (GoogleNetHttpTransport/newTrustedTransport)
+         (GsonFactory/getDefaultInstance)
+         (HttpCredentialsAdapter. creds))
+        (.setApplicationName "foo")
+        (.build))
     (catch Exception e
       (log/error e "Unable to register google sheets client"))))
 
-(defn- make-sheets []
+(defn- make-sheets-client []
   (->>
    (->secret :google-sa-creds-path)
    ->credentials
    ->sheets
    (reset! client)))
 
+(defn- ->csv [range-values]
+  (->>
+   (get range-values "values")
+   (reduce (fn [rows row] (conj rows (str/join "," row))) [])
+   (str/join "\n")))
+
+(defn- sync-sheets [gen-root]
+  (let [p "reference_puzzle"]
+    (spit
+     (str gen-root "/" p ".csv")
+     (-> @client
+         (.spreadsheets)
+         (.values)
+         (.get sheet-id "reference_puzzle!A1:D83")
+         (.execute)
+         (->csv)))))
+
 (defn -main [& args]
   (println "google-sync")
-  (make-sheets))
+  (let [build-dir (io/as-file "build")
+        root-dir (io/as-file "build/google-sync")]
+    (when
+     (and (.exists build-dir) (.exists root-dir))
+      (build/delete {:path "build/google-sync"}))
+
+    (io/make-parents "build/google-sync/foo.txt")
+
+    (make-sheets-client)
+    (sync-sheets "build/google-sync")))
 
 (comment
 
   (-> (->secret :google-sa-creds-path) (->credentials))
-  (make-sheets)
 
-  (-> @client 
-      (.spreadsheets) 
-      (.values) 
-      (.get sheet-id "reference_puzzle!A1:D83") 
+  (make-sheets-client)
+  (sync-sheets "")
+  (-main)
+
+  (-> @client
+      (.spreadsheets)
+      (.values)
+      (.get sheet-id "reference_puzzle!A1:D83")
       (.execute))
 
   (-main)
