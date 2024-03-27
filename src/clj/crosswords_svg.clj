@@ -59,11 +59,14 @@
    (gen-puzzles-js)
    (save-and-forward "gen/js/puzzles.js")))
 
-(defn- build-app []
+(defn build-app []
   (clean)
   (ensure-build-dir)
   (ensure-gen-dir)
   (-> (gen-puzzle-data) gen-index))
+
+(defn download-puzzles [uri]
+  )
 
 (defn -main [& args]
   (build-app))

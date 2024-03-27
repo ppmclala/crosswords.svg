@@ -4,4 +4,6 @@
          gen-puzzles cw/gen-puzzle-data
          gen-index cw/gen-index-dev
          build cw/build-app
-         make cw/-main}}
+         make cw/-main
+         sync-google-sheet
+         (clojure {:dir "."} "-M -m google-sync")}}
