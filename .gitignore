@@ -5,3 +5,6 @@
 gen/
 build/
 index.html
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
+.aider*

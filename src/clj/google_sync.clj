@@ -22,77 +22,139 @@
      (get k))))
 
 (def scopes [SheetsScopes/SPREADSHEETS SheetsScopes/DRIVE SheetsScopes/DRIVE_FILE])
+;; TODO: have a test sheet and a public sheet driven by config
 (def sheet-id "1McNmVbWzZL_twxwTR8Izh81VHRAQ0_sg_Y1KiPeJQfc")
-
-(defn ->credentials [path]
-  (let [cred (GoogleCredentials/fromStream (io/input-stream path))
-        scoped-cred (.createScoped cred scopes)]
-    scoped-cred))
-
 (def client (atom nil))
 
-(defn- ->sheets [creds]
+;; TODO: add integrant hooks to bounce the google client
+
+;; TODO: this can be removed once we verify on GH Action
+(defn ->credentials [path]
+  ;;(GoogleCredentials/fromStream (io/input-stream path))
+  (let [cred (GoogleCredentials/getApplicationDefault)
+        scoped-cred (.createScoped cred scopes)]
+    (println "(type cred):" (type cred))
+    (println "(type scoped-cred):" (type scoped-cred))
+    scoped-cred))
+
+(defn- ->sheets-client [creds]
   (try
-    (-> (Sheets$Builder.
-         (GoogleNetHttpTransport/newTrustedTransport)
-         (GsonFactory/getDefaultInstance)
-         (HttpCredentialsAdapter. creds))
-        (.setApplicationName "foo")
-        (.build))
+    (->
+     (Sheets$Builder.
+      (GoogleNetHttpTransport/newTrustedTransport)
+      (GsonFactory/getDefaultInstance)
+      (HttpCredentialsAdapter. creds))
+     (.setApplicationName "crosswords.svg")
+     (.build))
     (catch Exception e
       (log/error e "Unable to register google sheets client"))))
 
-(defn- make-sheets-client []
+(defn- refresh-sheets-client []
   (->>
    (->secret :google-sa-creds-path)
    ->credentials
-   ->sheets
+   ->sheets-client
    (reset! client)))
 
-(defn- ->csv [range-values]
+(defmacro with-client [body]
+  `(do (refresh-sheets-client) ~body))
+
+(defn ->range [title] (str title "!A1:D83"))
+
+(defn- ->clue [row]
+  (zipmap [:id :direction :clue :answer] row))
+
+(defn- ->edn [rvs]
   (->>
-   (get range-values "values")
-   (reduce (fn [rows row] (conj rows (str/join "," row))) [])
-   (str/join "\n")))
+   (get rvs "values")
+   (rest) ;; skip header
+   (map #(->clue %))))
 
-(defn- sync-sheets [gen-root]
-  (let [p "reference_puzzle"]
-    (spit
-     (str gen-root "/" p ".csv")
-     (-> @client
-         (.spreadsheets)
-         (.values)
-         (.get sheet-id "reference_puzzle!A1:D83")
-         (.execute)
-         (->csv)))))
+(defn- ->titles [sheets]
+  (map #(get-in % ["properties" "title"]) sheets))
 
-(defn -main [& args]
-  (println "google-sync")
+(defn- get-spreadsheet-values [s-id title]
+  (-> @client
+      (.spreadsheets)
+      (.values)
+      (.get s-id (->range title))
+      (.execute)
+      (->edn)))
+
+(defn- ->sheet-data [s-id sheets title]
+  (assoc sheets
+         title
+         (get-spreadsheet-values s-id title)))
+
+(defn- list-pages [sheet-id]
+  (-> @client
+      (.spreadsheets)
+      (.get sheet-id)
+      (.execute)
+      (get "sheets")
+      (->titles)))
+
+(defn sanitize-title [t]
+  (-> t
+      (str/replace #"\s+" "_")
+      (str/replace #"[^a-zA-Z0-9_-]" "")))
+
+(defn write-edn-file [r m k v]
+  (let [out-file (str r "/" (sanitize-title k) ".edn")]
+    (println "writing file" out-file)
+    (spit out-file (into [] v))
+    (assoc m k out-file)))
+
+(defn- write-data [gen-root data]
+  (reduce-kv (partial write-edn-file gen-root) {} data))
+
+(defn- sync-sheets [gen-root s-id]
+  (->>
+   (list-pages s-id)
+   (reduce (partial ->sheet-data s-id) {})
+   (write-data gen-root)))
+
+(defn dump-creds [& args]
+  (let [adc (GoogleCredentials/getApplicationDefault)
+        at (.getAccessToken adc)
+        scoped (.createScoped adc scopes)
+        scoped-at (.getAccessToken scoped)]
+    (.refreshAccessToken adc)
+    (.refreshAccessToken scoped)
+    (println "post-refresh:")
+    (println "ADC:" adc)
+    (println "ADC.accessToken:" at)
+    (println "scoped:" scoped)
+    (println "scoped.accessToken:" scoped-at)))
+
+(defn -main [& _]
+  (println "Generating new puzzles from Google Sheets...")
   (let [build-dir (io/as-file "build")
         root-dir (io/as-file "build/google-sync")]
     (when
      (and (.exists build-dir) (.exists root-dir))
-      (build/delete {:path "build/google-sync"}))
+      (do
+        (println "cleaning google sync dir" (.getPath root-dir))
+        (build/delete {:path "build/google-sync"})))
 
     (io/make-parents "build/google-sync/foo.txt")
 
-    (make-sheets-client)
-    (sync-sheets "build/google-sync")))
+    (with-client
+      (sync-sheets "build/google-sync" sheet-id))
+    (println "Done generating puzzle data in build/google-sync")))
 
 (comment
 
+  ;; TODO: credentials for GH action
   (-> (->secret :google-sa-creds-path) (->credentials))
 
-  (make-sheets-client)
-  (sync-sheets "")
-  (-main)
+  (refresh-sheets-client)
 
-  (-> @client
-      (.spreadsheets)
-      (.values)
-      (.get sheet-id "reference_puzzle!A1:D83")
-      (.execute))
+  (list-pages sheet-id)
 
   (-main)
+
+  (sanitize-title "foo#bar &|'baz")
+
   ;;
   )

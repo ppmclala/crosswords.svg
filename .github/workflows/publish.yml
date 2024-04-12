@@ -1,6 +1,7 @@
 name: publish
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,10 +10,13 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Prepare java
         uses: actions/setup-java@v3
@@ -24,6 +28,22 @@ jobs:
         uses: DeLaGuardo/setup-clojure@12.5
         with:
           bb: 'latest'                    # Babashka
+
+      - name: google sheets auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'mrmemento'
+          workload_identity_provider: 'projects/445183189637/locations/global/workloadIdentityPools/github/providers/crosswords-dot-svg'
+          create_credentials_file: true
+          service_account: crosswords-svg@mrmemento.iam.gserviceaccount.com
+          token_format: 'access_token'
+
+      - name: echo gcloud auth
+        run: gcloud auth list
+
+        # `sync` needs Google secret and sheet URI
+      - name: update puzzle data
+        run: bb sync
 
       - name: gen index.html
         run: bb build

@@ -7,5 +7,9 @@
          build       cw/build-app
          make        cw/-main
 
-         sync-google-sheet
+
+         dump-adc
+         (clojure {:dir "."} "-X google-sync/dump-creds")
+
+         sync
          (clojure {:dir "."} "-M -m google-sync")}}

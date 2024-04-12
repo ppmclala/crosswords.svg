@@ -64,9 +64,6 @@
   (ensure-gen-dir)
   (-> (gen-puzzle-data) gen-index))
 
-(defn download-puzzles [uri]
-  )
-
 (defn -main [& args]
   (build-app))
 
