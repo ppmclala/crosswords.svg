@@ -1,9 +1,11 @@
 {:min-bb-version "0.8.156"
  :paths ["." "src/clj" "resources"]
  :tasks {:requires ([crosswords-svg :as cw])
+
          gen-puzzles cw/gen-puzzle-data
-         gen-index cw/gen-index-dev
-         build cw/build-app
-         make cw/-main
+         gen-index   cw/gen-index-dev
+         build       cw/build-app
+         make        cw/-main
+
          sync-google-sheet
          (clojure {:dir "."} "-M -m google-sync")}}

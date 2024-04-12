@@ -5,18 +5,17 @@
    [selmer.parser :as sp]
    [babashka.fs :as fs]))
 
+(defn- ensure-dir [dir]
+  (when-not (fs/exists? dir)
+    (fs/create-dirs dir)))
+
 (def build-dir "build")
 
 (defn clean []
   (fs/delete-tree build-dir))
 
-(defn- ensure-build-dir []
-  (when-not (fs/exists? build-dir)
-    (fs/create-dir build-dir)))
-
-(defn- ensure-gen-dir []
-  (when-not (fs/exists? "gen/js")
-    (fs/create-dirs "gen/js")))
+(defn- ensure-build-dir [] (ensure-dir build-dir))
+(defn- ensure-gen-dir [] (ensure-dir "gen/js"))
 
 (defn- extract-puzzle-data [dir]
   (->>
@@ -32,8 +31,8 @@
                     (->> (first csv-data) (map keyword) repeat)
                     (rest csv-data)))}))))
 
-(defn- save-and-forward [path content] 
-  (spit path content) 
+(defn- save-and-forward [path content]
+  (spit path content)
   content)
 
 (defn- gen-index [puzzles]
@@ -46,7 +45,7 @@
      (spit (str build-dir "/index.html")))))
 
 (defn gen-index-dev []
-  (spit "index.html" 
+  (spit "index.html"
         (sp/render-file "./index.html.template" {:env :dev})))
 
 (defn gen-puzzles-js [ps]
@@ -80,6 +79,7 @@
   (build-app)
 
   (gen-puzzle-data)
+
 
   (sp/render "{{ puzzles }}" {:puzzles (extract-puzzle-data "data/csv")})
 ;;
