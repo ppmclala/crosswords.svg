@@ -2,7 +2,7 @@
 
 ## what
 
-A simple SVG crossword puzzle designed to be projected or displayed on large screens for use in group games.
+A simple SVG [crossword puzzle](https://ppmclala.github.io/crosswords.svg) designed to be projected or displayed on large screens for use in group games.
 
 ## why
 
@@ -22,7 +22,7 @@ This software is [unlicensed](./LICENSE).  Do with it what you please.
 * build a single HTML file for release: `bb build`
 * run an `nrepl` instance using babashka: `bb nrepl-server`
 * sync data from source Google sheet into `gen/google-sync`: `bb sync`
-* Github Action automates the demo site deployment to GH pages.  build pipeline: `bb clean && bb sync && bb build`
+* Github Action automates the [demo site](https://ppmclala.github.io/crosswords.svg) deployment to GH pages.  build pipeline: `bb clean && bb sync && bb build`
 
 ## thanks
 
