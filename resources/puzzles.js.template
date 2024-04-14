@@ -1,17 +1,11 @@
 const puzzles = [];
 
-puzzles.push(
-
-{% for p in puzzles %}
+puzzles.push({% for p in puzzles %}
 {
   name: '{{ p.name }}',
   clues: 
   [
-   {% for c in p.data %}
-   {id: '{{ c.id }}', direction: '{{ c.direction }}', clue: '{{ c.id }}.  {{ c.clue }}', answer: '{{ c.answer }}'},
-   {% endfor %}
+   {% for c in p.data %}{id: '{{ c.id }}', direction: '{{ c.direction }}', clue: '{{ c.id }}.  {{ c.clue }}', answer: '{{ c.answer }}'},{% endfor %}
   ]
-}, 
-{% endfor %}
-
+},{% endfor %}
 );

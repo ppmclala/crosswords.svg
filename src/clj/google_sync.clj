@@ -12,15 +12,6 @@
    [com.google.auth.http HttpCredentialsAdapter]
    [com.google.auth.oauth2 GoogleCredentials]))
 
-(def secrets-path (str (System/getProperty "user.home") "/.secrets.edn"))
-
-(defn ->secret [k]
-  (when (.exists (io/as-file secrets-path))
-    (->
-     (slurp secrets-path)
-     edn/read-string
-     (get k))))
-
 (def scopes [SheetsScopes/SPREADSHEETS SheetsScopes/DRIVE SheetsScopes/DRIVE_FILE])
 ;; TODO: have a test sheet and a public sheet driven by config
 (def sheet-id "1McNmVbWzZL_twxwTR8Izh81VHRAQ0_sg_Y1KiPeJQfc")
@@ -28,14 +19,8 @@
 
 ;; TODO: add integrant hooks to bounce the google client
 
-;; TODO: this can be removed once we verify on GH Action
-(defn ->credentials [path]
-  ;;(GoogleCredentials/fromStream (io/input-stream path))
-  (let [cred (GoogleCredentials/getApplicationDefault)
-        scoped-cred (.createScoped cred scopes)]
-    (println "(type cred):" (type cred))
-    (println "(type scoped-cred):" (type scoped-cred))
-    scoped-cred))
+(defn ->credentials []
+  (-> (GoogleCredentials/getApplicationDefault) (.createScoped scopes)))
 
 (defn- ->sheets-client [creds]
   (try
@@ -51,8 +36,7 @@
 
 (defn- refresh-sheets-client []
   (->>
-   (->secret :google-sa-creds-path)
-   ->credentials
+   (->credentials)
    ->sheets-client
    (reset! client)))
 
@@ -129,24 +113,22 @@
 
 (defn -main [& _]
   (println "Generating new puzzles from Google Sheets...")
-  (let [build-dir (io/as-file "build")
-        root-dir (io/as-file "build/google-sync")]
+  ;; TODO: use the ensure-dir code (just consolidate into build.clj)
+  (let [gen-dir (io/as-file "gen")
+        root-dir (io/as-file "gen/google-sync")]
     (when
-     (and (.exists build-dir) (.exists root-dir))
+     (and (.exists gen-dir) (.exists root-dir))
       (do
         (println "cleaning google sync dir" (.getPath root-dir))
-        (build/delete {:path "build/google-sync"})))
+        (build/delete {:path "gen/google-sync"})))
 
-    (io/make-parents "build/google-sync/foo.txt")
+    (io/make-parents "gen/google-sync/foo.txt")
 
     (with-client
-      (sync-sheets "build/google-sync" sheet-id))
-    (println "Done generating puzzle data in build/google-sync")))
+      (sync-sheets "gen/google-sync" sheet-id))
+    (println "Done generating puzzle data in gen/google-sync")))
 
 (comment
-
-  ;; TODO: credentials for GH action
-  (-> (->secret :google-sa-creds-path) (->credentials))
 
   (refresh-sheets-client)
 

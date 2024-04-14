@@ -6,7 +6,7 @@
          gen-index   cw/gen-index-dev
          build       cw/build-app
          make        cw/-main
-
+         clean        cw/do-clean
 
          dump-adc
          (clojure {:dir "."} "-X google-sync/dump-creds")

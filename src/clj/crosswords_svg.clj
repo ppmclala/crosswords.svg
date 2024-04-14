@@ -2,6 +2,7 @@
   (:require
    [clojure.data.csv :as csv]
    [clojure.java.io :as io]
+   [clojure.edn :as edn]
    [selmer.parser :as sp]
    [babashka.fs :as fs]))
 
@@ -10,9 +11,14 @@
     (fs/create-dirs dir)))
 
 (def build-dir "build")
+(def gen-dir "gen")
 
-(defn clean []
-  (fs/delete-tree build-dir))
+(defn- clean []
+  (fs/delete-tree build-dir)
+  (fs/delete-tree gen-dir)
+  (ensure-dir build-dir)
+  (ensure-dir (str gen-dir "/js"))
+  (ensure-dir (str gen-dir "/google-sync")))
 
 (defn- ensure-build-dir [] (ensure-dir build-dir))
 (defn- ensure-gen-dir [] (ensure-dir "gen/js"))
@@ -24,12 +30,8 @@
    file-seq
    (filter #(.isFile %1))
    (map
-    (fn [f] {:name (.getName f)
-             :data
-             (let [csv-data (csv/read-csv (slurp f))]
-               (map zipmap
-                    (->> (first csv-data) (map keyword) repeat)
-                    (rest csv-data)))}))))
+    (fn [f] {:name (.getName f) ;; remove .edn
+             :data (edn/read-string (slurp f))}))))
 
 (defn- save-and-forward [path content]
   (spit path content)
@@ -52,17 +54,18 @@
   (let [template "./puzzles.js.template"]
     (sp/render-file template {:puzzle-count 1000 :puzzles ps})))
 
-(defn gen-puzzle-data []
+(defn gen-puzzle-data [puzzle-data-dir js-target-file]
   (->>
-   (extract-puzzle-data "data/csv")
+   (extract-puzzle-data puzzle-data-dir)
    (gen-puzzles-js)
-   (save-and-forward "gen/js/puzzles.js")))
+   (save-and-forward js-target-file)))
 
 (defn build-app []
-  (clean)
   (ensure-build-dir)
   (ensure-gen-dir)
-  (-> (gen-puzzle-data) gen-index))
+  (-> (gen-puzzle-data "gen/google-sync" "gen/js/puzzles.js") gen-index))
+
+(defn do-clean [& args] (clean))
 
 (defn -main [& args]
   (build-app))
@@ -74,9 +77,6 @@
    (gen-puzzles-js))
 
   (build-app)
-
-  (gen-puzzle-data)
-
 
   (sp/render "{{ puzzles }}" {:puzzles (extract-puzzle-data "data/csv")})
 ;;

@@ -49,8 +49,6 @@ gcloud iam workload-identity-pools providers create-oidc "crosswords-dot-svg" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 ```
 
-TODO: delete the my-repo provider
-
 #### extract provider resource name
 
 ```
@@ -138,7 +136,7 @@ https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-p
 4. provider id: 'crosswords-dot-svg'
 5. new SA: crosswords-svg@mrmemento.iam.gserviceaccount.com
 6. project number: 445183189637
-6. GH subject: repo:ppmclala/crosswords.svg:ref:refs/heads/automate-puzzle-data # TODO: update to main
+6. GH subject: repo:ppmclala/crosswords.svg:ref:refs/heads/main
 7. grant workload identity user role
 
 ```
