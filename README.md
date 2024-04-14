@@ -6,7 +6,7 @@ A simple SVG crossword puzzle designed to be projected or displayed on large scr
 
 ## why
 
-Replacement for a physical layout screen that was used by Proprietor's Green Memory Care Unit in Marshfield, MA.  Instead of re-printing a new copy, the idea is to use this project to catalog the puzzles from the accompanying book and have a simple mechanism for running group puzzle solving sessions. 
+Replacement for a physical layout screen that was used by a memory care unit for a group activity.  Instead of re-printing a new copy, the idea is to use this project to catalog the puzzles from the accompanying book and have a simple mechanism for running group puzzle solving sessions. 
 
 ## how
 
@@ -21,8 +21,8 @@ This software is [unlicensed](./LICENSE).  Do with it what you please.
 * generate index.html for dev/test: `bb gen-index`
 * build a single HTML file for release: `bb build`
 * run an `nrepl` instance using babashka: `bb nrepl-server`
-* generate puzzle data from CSV files in `data`: `bb gen-puzzles`
-* coming soon: extract clues from google sheet: `bb gen-puzzle-data`
+* sync data from source Google sheet into `gen/google-sync`: `bb sync`
+* Github Action automates the demo site deployment to GH pages.  build pipeline: `bb clean && bb sync && bb build`
 
 ## thanks
 
